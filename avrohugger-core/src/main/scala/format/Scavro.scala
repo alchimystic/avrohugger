@@ -93,6 +93,7 @@ object Scavro extends SourceFormat {
                   targetScalaPartialVersion)
                 List(scalaCompilationUnit)
               }
+              case ScalaEnumeratum => ???
               case ScalaCaseObjectEnum => {
                 val scalaCompilationUnit = getScalaCompilationUnit(
                   classStore,
@@ -146,6 +147,7 @@ object Scavro extends SourceFormat {
           }
           case ScalaCaseObjectEnum => List(scalaCompilationUnit)
           case ScalaEnumeration    => List(scalaCompilationUnit)
+          case ScalaEnumeratum => ???
           case EnumAsScalaString   => List(scalaCompilationUnit)
         }
       }
@@ -163,6 +165,7 @@ object Scavro extends SourceFormat {
           case JavaEnum => getLocalSubtypes(protocol).filterNot(isEnum)
           case ScalaCaseObjectEnum => getLocalSubtypes(protocol)
           case ScalaEnumeration => getLocalSubtypes(protocol)
+          case ScalaEnumeratum => ???
           case EnumAsScalaString => getLocalSubtypes(protocol).filterNot(isEnum)
         }
         if (localSubTypes.length > 1) protocol.getName

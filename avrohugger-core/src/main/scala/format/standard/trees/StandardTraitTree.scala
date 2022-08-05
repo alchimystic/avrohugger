@@ -3,15 +3,15 @@ package format
 package standard
 package trees
 
+import avrohugger.stores.ClassStore
 import generators.ScalaDocGenerator
 import matchers.TypeMatcher
 import types._
 import treehugger.forest._
 import definitions._
 import treehuggerDSL._
-
-import org.apache.avro.{ Protocol, Schema }
-import org.apache.avro.Schema.Type.{ ENUM, RECORD }
+import org.apache.avro.{Protocol, Schema}
+import org.apache.avro.Schema.Type.{ENUM, RECORD}
 
 import scala.jdk.CollectionConverters._
 
@@ -25,6 +25,7 @@ object StandardTraitTree {
         case JavaEnum => protocol.getTypes().asScala.toList.filterNot(isEnum)
         case ScalaCaseObjectEnum => protocol.getTypes().asScala.toList
         case ScalaEnumeration => protocol.getTypes().asScala.toList
+        case ScalaEnumeratum => protocol.getTypes().asScala.toList
         case EnumAsScalaString => protocol.getTypes().asScala.filterNot(isEnum)
       }
       if (adtSubTypes.forall(schema => schema.getType == RECORD)) {
@@ -60,4 +61,45 @@ object StandardTraitTree {
       adtRootTree)
     List(adtRootTreeWithScalaDoc, objectTree)
   }
+
+  def toScalaEnumeratumDef(
+                            classStore: ClassStore,
+                            schema: Schema,
+                            maybeBaseTrait: Option[String],
+                            maybeFlags: Option[List[Long]]
+                          ): List[Tree] = {
+
+    val name = schema.getName
+
+    val namespaceAnnot = Option(schema.getNamespace)
+      .map(nm => ANNOT(s"""AvroNamespace("$nm")"""))
+
+    val enumImport = IMPORT("enumeratum", "EnumEntry", "VulcanEnum")
+    val annotImport = namespaceAnnot.map(_ => IMPORT("vulcan.generic.AvroNamespace"))
+
+    val importNodes = List(enumImport) ++ annotImport.toList
+
+    val entryDef = TRAITDEF(name)
+      .withFlags(Flags.SEALED)
+      .withParents("EnumEntry")
+      .withAnnots(namespaceAnnot.toList)
+
+    val objectDef =  OBJECTDEF(name)
+      .withParents(s"Enum[$name]")
+      .withParents(s"VulcanEnum[$name]")
+
+    val valuesVal = VAL("values").withType(s"IndexedSeq[$name]") := REF("findValues")
+
+    val symbolsList = schema.getEnumSymbols.asScala.map{ s =>
+      OBJECTDEF(s)
+        .withFlags(Flags.CASE)
+        .withParents(name)
+    }
+
+    val contents: List[Tree] = List(valuesVal) ++ symbolsList
+    val objectTree = objectDef := BLOCK(contents)
+
+    importNodes ++ List(entryDef, objectTree)
+  }
+
 }

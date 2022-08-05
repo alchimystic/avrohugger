@@ -25,3 +25,7 @@ project/plugins/project/
 .bloop
 .vscode
 *metals.sbt
+/specific/
+/output/
+/specific/
+*.iml

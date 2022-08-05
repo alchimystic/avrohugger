@@ -4,16 +4,14 @@ package standard
 package avrohuggers
 
 import format.abstractions.avrohuggers.Schemahugger
-import trees.{ StandardCaseClassTree, StandardObjectTree, StandardTraitTree }
+import trees.{StandardCaseClassTree, StandardObjectTree, StandardTraitTree}
 import matchers.TypeMatcher
 import stores.{ClassStore, SchemaStore}
 import types._
-
-import org.apache.avro.{ Protocol, Schema }
-import org.apache.avro.Schema.Type.{ ENUM, FIXED, RECORD }
-
+import org.apache.avro.{Protocol, Schema}
+import org.apache.avro.Schema.Type.{ENUM, FIXED, RECORD}
 import treehugger.forest._
-import definitions._
+import overrides.Overrides
 import treehuggerDSL._
 
 object StandardSchemahugger extends Schemahugger {
@@ -39,12 +37,16 @@ object StandardSchemahugger extends Schemahugger {
           maybeBaseTrait,
           maybeFlags,
           restrictedFields)
+
+        val bgImports = Overrides.instance.getBigDecimalImport(schema).map(IMPORT(_))
+        val base = bgImports.toList ++ List(classDef)
+
         val companionDef = StandardObjectTree.toCaseCompanionDef(
           schema,
           maybeFlags)
         typeMatcher.avroScalaTypes.record match {
-          case ScalaCaseClass => List(classDef)
-          case ScalaCaseClassWithSchema => List(classDef, companionDef)
+          case ScalaCaseClass => base
+          case ScalaCaseClassWithSchema => base ++ List(companionDef)
         }
       case ENUM => typeMatcher.avroScalaTypes.enum match {
         case JavaEnum =>
@@ -58,6 +60,8 @@ object StandardSchemahugger extends Schemahugger {
             maybeBaseTrait,
             maybeFlags)
           List(objectDef)
+        case ScalaEnumeratum =>
+          StandardTraitTree.toScalaEnumeratumDef(classStore, schema, maybeBaseTrait, maybeFlags)
         case EnumAsScalaString => List.empty
       }
       case FIXED =>

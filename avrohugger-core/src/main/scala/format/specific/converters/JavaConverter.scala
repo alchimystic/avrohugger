@@ -187,6 +187,7 @@ object JavaConverter {
           NEW(
             REF("org.apache.avro.generic.GenericData.EnumSymbol").APPLY(schemaTree, tree))
         case JavaEnum | ScalaEnumeration | ScalaCaseObjectEnum => tree
+        case ScalaEnumeratum => tree
       }
     }
     case _ => tree

@@ -35,7 +35,7 @@ class JavaConverter(
     tree: Tree): Tree = {
     enumType match {
       case EnumAsScalaString => tree
-      case JavaEnum | ScalaEnumeration | ScalaCaseObjectEnum => {
+      case JavaEnum | ScalaEnumeration | ScalaCaseObjectEnum | ScalaEnumeratum => {
         val conversionCases = schema.getEnumSymbols.asScala.map(enumSymbol => {
           CASE(REF(schema.getName) DOT(enumSymbol)) ==> {
             (REF("J" + schema.getName) DOT(enumSymbol))

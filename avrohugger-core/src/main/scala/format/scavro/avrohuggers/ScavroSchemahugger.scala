@@ -62,6 +62,7 @@ object ScavroSchemahugger extends Schemahugger{
             maybeBaseTrait,
             maybeFlags)
           List(objectDef)
+        case ScalaEnumeratum => ???
         case EnumAsScalaString => List.empty
       }
       case _ =>

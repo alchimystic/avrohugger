@@ -127,8 +127,9 @@ object ScavroImporter extends Importer {
         def isTopLevel(schema: Schema) = typeMatcher.avroScalaTypes.enum match {
           case EnumAsScalaString =>
             isRecord(schema)
-          case JavaEnum | ScalaEnumeration | ScalaCaseObjectEnum =>
+          case JavaEnum | ScalaEnumeration | ScalaCaseObjectEnum | ScalaEnumeratum =>
             (isRecord(schema) || (isEnum(schema)))
+
         }
         isTopLevel(schema)  && Option(schema.getNamespace) != namespace
       }
