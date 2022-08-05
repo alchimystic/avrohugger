@@ -87,6 +87,7 @@ trait SourceFormat {
       case JavaEnum => ".java"
       case ScalaCaseObjectEnum => ".scala"
       case ScalaEnumeration => ".scala"
+      case ScalaEnumeratum => ".scala"
       case EnumAsScalaString => sys.error("Only RECORD and ENUM can be top-level definitions")
     }
     
@@ -183,6 +184,7 @@ trait SourceFormat {
         case JavaEnum => schema.getName
         case ScalaCaseObjectEnum => schema.getName
         case ScalaEnumeration => renameEnum(schema, "Value")
+        case ScalaEnumeratum => schema.getName
         case EnumAsScalaString => schema.getName
       }
       val classSymbol = RootClass.newClass(typeName)

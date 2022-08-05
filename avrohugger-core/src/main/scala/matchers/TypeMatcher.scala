@@ -1,7 +1,7 @@
 package avrohugger
 package matchers
 
-import avrohugger.matchers.custom.CustomTypeMatcher
+import avrohugger.matchers.custom.{CustomTypeMatcher, ConfigurableTypeMatcher}
 import avrohugger.stores.ClassStore
 import avrohugger.types._
 import treehugger.forest._
@@ -64,7 +64,7 @@ class TypeMatcher(
             case UUID => RootClass.newClass(nme.createNameType("java.util.UUID"))
           }
         case Schema.Type.FIXED    => classStore.generatedClasses(schema)
-        case Schema.Type.BYTES    => CustomTypeMatcher.checkCustomDecimalType(avroScalaTypes.decimal, schema)
+        case Schema.Type.BYTES    => ConfigurableTypeMatcher.checkCustomDecimalType(avroScalaTypes.decimal, schema)
         case Schema.Type.RECORD   => classStore.generatedClasses(schema)
         case Schema.Type.ENUM     => CustomTypeMatcher.checkCustomEnumType(avroScalaTypes.`enum`, classStore, schema, useFullName)
         case Schema.Type.UNION    => {

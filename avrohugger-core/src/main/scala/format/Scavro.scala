@@ -81,7 +81,8 @@ object Scavro extends SourceFormat {
                   typeMatcher)
                 List(javaCompilationUnit)
               }
-              case ScalaEnumeration => {
+              case ScalaEnumeration | ScalaEnumeratum => {
+                //TODO csilva check for Enumeratum
                 val scalaCompilationUnit = getScalaCompilationUnit(
                   classStore,
                   maybeScavroModelNamespace,
@@ -146,6 +147,7 @@ object Scavro extends SourceFormat {
           }
           case ScalaCaseObjectEnum => List(scalaCompilationUnit)
           case ScalaEnumeration    => List(scalaCompilationUnit)
+          case ScalaEnumeratum => ???
           case EnumAsScalaString   => List(scalaCompilationUnit)
         }
       }
@@ -163,6 +165,7 @@ object Scavro extends SourceFormat {
           case JavaEnum => getLocalSubtypes(protocol).filterNot(isEnum)
           case ScalaCaseObjectEnum => getLocalSubtypes(protocol)
           case ScalaEnumeration => getLocalSubtypes(protocol)
+          case ScalaEnumeratum => ???
           case EnumAsScalaString => getLocalSubtypes(protocol).filterNot(isEnum)
         }
         if (localSubTypes.length > 1) protocol.getName
