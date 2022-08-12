@@ -74,11 +74,6 @@ object StandardTraitTree {
     val namespaceAnnot = Option(schema.getNamespace)
       .map(nm => ANNOT(s"""AvroNamespace("$nm")"""))
 
-    val enumImport = IMPORT("enumeratum", "EnumEntry", "VulcanEnum")
-    val annotImport = namespaceAnnot.map(_ => IMPORT("vulcan.generic.AvroNamespace"))
-
-    val importNodes = List(enumImport) ++ annotImport.toList
-
     val entryDef = TRAITDEF(name)
       .withFlags(Flags.SEALED)
       .withParents("EnumEntry")
@@ -99,7 +94,7 @@ object StandardTraitTree {
     val contents: List[Tree] = List(valuesVal) ++ symbolsList
     val objectTree = objectDef := BLOCK(contents)
 
-    importNodes ++ List(entryDef, objectTree)
+    List(entryDef, objectTree)
   }
 
 }

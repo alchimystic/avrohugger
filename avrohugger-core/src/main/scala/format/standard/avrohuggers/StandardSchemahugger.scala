@@ -37,16 +37,12 @@ object StandardSchemahugger extends Schemahugger {
           maybeBaseTrait,
           maybeFlags,
           restrictedFields)
-
-        val bgImports = Overrides.instance.getBigDecimalImport(schema).map(IMPORT(_))
-        val base = bgImports.toList ++ List(classDef)
-
         val companionDef = StandardObjectTree.toCaseCompanionDef(
           schema,
           maybeFlags)
         typeMatcher.avroScalaTypes.record match {
-          case ScalaCaseClass => base
-          case ScalaCaseClassWithSchema => base ++ List(companionDef)
+          case ScalaCaseClass => List(classDef)
+          case ScalaCaseClassWithSchema => List(classDef, companionDef)
         }
       case ENUM => typeMatcher.avroScalaTypes.enum match {
         case JavaEnum =>
