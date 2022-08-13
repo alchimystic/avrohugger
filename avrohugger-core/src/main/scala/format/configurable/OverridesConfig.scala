@@ -1,9 +1,13 @@
-package overrides
+package avrohugger
+package format
+package configurable
 
 import java.util.Properties
 import scala.io.Source
 
-case class OverridesConfig(bigDecimalsModule: String)
+case class OverridesConfig(bigDecimalsModule: Option[String],
+                           enumeratum: Boolean,
+                           vulcan: Boolean)
 
 object OverridesConfig {
 
@@ -24,10 +28,13 @@ object OverridesConfig {
   }
 
   private def create(props: Properties): OverridesConfig = {
-    def getProp(key: String): String = Option(props.getProperty(key)).get
+    def opt(key: String) = Option(props.getProperty(key))
+    def bool(key: String) = opt(key).map(_.toBoolean)
 
     OverridesConfig(
-      getProp("bigDecimalsModule")
+      opt("bigDecimalsModule"),
+      bool("enumeratum").getOrElse(false),
+      bool("vulcan").getOrElse(false),
     )
   }
 

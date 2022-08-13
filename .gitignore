@@ -27,5 +27,4 @@ project/plugins/project/
 *metals.sbt
 /specific/
 /output/
-/specific/
 *.iml

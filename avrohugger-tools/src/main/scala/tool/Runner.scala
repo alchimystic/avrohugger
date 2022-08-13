@@ -1,13 +1,14 @@
 package avrohugger
 package tool
 
+import avrohugger.format.configurable.Overrides
 import format.abstractions.SourceFormat
-import format.{Scavro, SpecificRecord, Standard}
+import format.{Configurable, Scavro, SpecificRecord, Standard}
+
 import java.util.Arrays
 import java.util.Map
 import java.util.TreeMap
 import java.io.{InputStream, PrintStream}
-
 import org.apache.avro.tool.Tool
 
 import scala.util.{Failure, Success, Try}
@@ -23,7 +24,7 @@ class Runner(in: InputStream, out: PrintStream, err: PrintStream) {
    * Available tools, initialized in constructor.
    */
   val toolsMap: Map[String, Tool] = new TreeMap[String, Tool]();
-  val formats = Array[SourceFormat](Standard, SpecificRecord, Scavro)
+  val formats = Array[SourceFormat](standardOrConfigurable, SpecificRecord, Scavro)
   val tools = formats.map(format => new GeneratorTool(format))
   for (tool <- tools.toArray[Tool]) {
     var prev: Tool = toolsMap.put(tool.getName(), tool);
@@ -32,6 +33,14 @@ class Runner(in: InputStream, out: PrintStream, err: PrintStream) {
           "Two toolsMap with identical names: " + tool + ", " + prev);
     }
     maxLen = Math.max(tool.getName().length(), maxLen);
+  }
+
+  /**
+    * @return Standard or Configurable, depending if Overrides is configured
+    */
+  def standardOrConfigurable: SourceFormat = Overrides.instance.isConfigured match {
+    case true => Configurable
+    case false => Standard
   }
 
   /**

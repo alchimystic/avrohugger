@@ -9,7 +9,6 @@ import org.apache.avro.Schema
 import treehugger.forest._
 import treehuggerDSL._
 import definitions._
-import overrides.Overrides
 
 object CustomTypeMatcher {
 
@@ -27,8 +26,7 @@ object CustomTypeMatcher {
     useFullName: Boolean = false
   ) = enumType match {
       case JavaEnum => classStore.generatedClasses(schema)
-      case ScalaEnumeration => if (useFullName) RootClass.newClass(s"${schema.getNamespace()}.${classStore.generatedClasses(schema)}") else classStore.generatedClasses(schema)
-      case ScalaEnumeratum => if (useFullName) RootClass.newClass(s"${schema.getNamespace()}.${classStore.generatedClasses(schema)}") else classStore.generatedClasses(schema)
+      case ScalaEnumeration | ScalaEnumeratum => if (useFullName) RootClass.newClass(s"${schema.getNamespace()}.${classStore.generatedClasses(schema)}") else classStore.generatedClasses(schema)
       case ScalaCaseObjectEnum => classStore.generatedClasses(schema)
       case EnumAsScalaString => StringClass
     }
@@ -51,15 +49,12 @@ object CustomTypeMatcher {
   }
 
   def checkCustomDecimalType(decimalType: AvroScalaDecimalType, schema: Schema) =
-    Overrides.instance.getDecimalType(decimalType, schema).getOrElse {
       LogicalType.foldLogicalTypes(
         schema = schema,
         default = TYPE_ARRAY(ByteClass)) {
-        case Decimal(precision, scale) => decimalType match {
-          case ScalaBigDecimal(_) => BigDecimalClass
-          case ScalaBigDecimalWithPrecision(_) => decimalTaggedType(precision, scale)
+          case Decimal(precision, scale) => decimalType match {
+            case ScalaBigDecimal(_) => BigDecimalClass
+            case ScalaBigDecimalWithPrecision(_) => decimalTaggedType(precision, scale)
+          }
         }
-      }
-    }
-
 }

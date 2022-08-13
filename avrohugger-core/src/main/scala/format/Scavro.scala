@@ -81,7 +81,8 @@ object Scavro extends SourceFormat {
                   typeMatcher)
                 List(javaCompilationUnit)
               }
-              case ScalaEnumeration => {
+              case ScalaEnumeration | ScalaEnumeratum => {
+                //TODO csilva check for Enumeratum
                 val scalaCompilationUnit = getScalaCompilationUnit(
                   classStore,
                   maybeScavroModelNamespace,
@@ -93,7 +94,6 @@ object Scavro extends SourceFormat {
                   targetScalaPartialVersion)
                 List(scalaCompilationUnit)
               }
-              case ScalaEnumeratum => ???
               case ScalaCaseObjectEnum => {
                 val scalaCompilationUnit = getScalaCompilationUnit(
                   classStore,

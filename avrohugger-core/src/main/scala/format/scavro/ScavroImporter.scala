@@ -129,7 +129,6 @@ object ScavroImporter extends Importer {
             isRecord(schema)
           case JavaEnum | ScalaEnumeration | ScalaCaseObjectEnum | ScalaEnumeratum =>
             (isRecord(schema) || (isEnum(schema)))
-
         }
         isTopLevel(schema)  && Option(schema.getNamespace) != namespace
       }

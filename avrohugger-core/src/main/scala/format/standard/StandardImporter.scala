@@ -3,7 +3,6 @@ package format
 package standard
 
 import avrohugger.format.abstractions.Importer
-import avrohugger.format.standard.StandardImporter.{getEnumSchemas, getFixedSchemas, getRecordSchemas, getTopLevelSchemas, getUserDefinedImports}
 import avrohugger.matchers.TypeMatcher
 import avrohugger.stores.SchemaStore
 import avrohugger.types._
@@ -12,7 +11,6 @@ import org.apache.avro.{Protocol, Schema}
 import com.fasterxml.jackson.databind.JsonNode
 import treehugger.forest._
 import definitions._
-import overrides.Overrides
 import treehuggerDSL._
 
 import scala.jdk.CollectionConverters._
@@ -26,14 +24,14 @@ trait StandardImporter extends Importer {
     * since they are codegen in terms of [[Option]] and [[Either]]
     */
   private[this] def getShapelessImports(
-                                         topLevelRecordSchemas: List[Schema],
-                                         typeMatcher: TypeMatcher): List[Import] = {
+    topLevelRecordSchemas: List[Schema],
+    typeMatcher: TypeMatcher): List[Import] = {
 
     def determineShapelessCoproductImports(
-                                            field: Schema.Field,
-                                            schema: Schema,
-                                            typeMatcher: TypeMatcher,
-                                            potentialRecursives: List[Schema]): List[String] = schema.getType match {
+      field: Schema.Field,
+      schema: Schema,
+      typeMatcher: TypeMatcher,
+      potentialRecursives: List[Schema]): List[String] = schema.getType match {
       case Schema.Type.UNION  =>
         coproductImportsForUnionType(field, schema, typeMatcher) ++
           schema.getTypes().asScala.toList.flatMap(s =>
@@ -52,17 +50,17 @@ trait StandardImporter extends Importer {
     }
 
     def determineShapelessTagImport(
-                                     schema: Schema,
-                                     typeMatcher: TypeMatcher,
-                                     potentialRecursives: List[Schema]): List[String] = schema.getType match {
+      schema: Schema,
+      typeMatcher: TypeMatcher,
+      potentialRecursives: List[Schema]): List[String] = schema.getType match {
       case Schema.Type.UNION  => schema.getTypes().asScala.toList.flatMap(s =>
-        determineShapelessTagImport(s, typeMatcher, potentialRecursives))
+                                   determineShapelessTagImport(s, typeMatcher, potentialRecursives))
       case Schema.Type.ARRAY  => determineShapelessTagImport(schema.getElementType(), typeMatcher, potentialRecursives)
       case Schema.Type.MAP    => determineShapelessTagImport(schema.getValueType(), typeMatcher, potentialRecursives)
       case Schema.Type.RECORD => schema.getFields().asScala.toList.flatMap(f => {
-        if (potentialRecursives.map(_.getFullName).contains(schema.getFullName)) List.empty
-        else determineShapelessTagImport(f.schema, typeMatcher, potentialRecursives:+schema)
-      })
+                                   if (potentialRecursives.map(_.getFullName).contains(schema.getFullName)) List.empty
+                                   else determineShapelessTagImport(f.schema, typeMatcher, potentialRecursives:+schema)
+                                 })
       case Schema.Type.BYTES  => importsForBigDecimalTagged(schema)
       case _ => List.empty[String]
     }
@@ -72,17 +70,17 @@ trait StandardImporter extends Importer {
         schema.getType == Schema.Type.BYTES && LogicalType.foldLogicalTypes(
           schema = schema,
           default = false) {
-          case Decimal(_, _) => typeMatcher.avroScalaTypes.decimal match {
-            case ScalaBigDecimal(_) => false
-            case ScalaBigDecimalWithPrecision(_) => true
-          }
+            case Decimal(_, _) => typeMatcher.avroScalaTypes.decimal match {
+              case ScalaBigDecimal(_) => false
+              case ScalaBigDecimalWithPrecision(_) => true
+            }
         }
       }.map(_ => List("tag.@@")).getOrElse(Nil)
 
     def coproductImportsForUnionType(
-                                      field: Schema.Field,
-                                      unionSchema: Schema,
-                                      typeMatcher: TypeMatcher): List[String] = {
+      field: Schema.Field,
+      unionSchema: Schema,
+      typeMatcher: TypeMatcher): List[String] = {
       val thresholdNonNullTypes = typeMatcher.avroScalaTypes.union match {
         case OptionalShapelessCoproduct => 0 // if a union contains at least one type, then it will need :+:
         case OptionShapelessCoproduct => 1
@@ -91,10 +89,10 @@ trait StandardImporter extends Importer {
       val unionContainsNull: Schema => Boolean = _.getType == Schema.Type.NULL
       def shapelessCoproductTest(unionTypes: List[Schema], maxNonNullTypes: Int): Boolean =
         (unionTypes.length > maxNonNullTypes     && !unionTypes.exists(unionContainsNull)) ||
-          (unionTypes.length > maxNonNullTypes + 1 &&  unionTypes.exists(unionContainsNull))
+        (unionTypes.length > maxNonNullTypes + 1 &&  unionTypes.exists(unionContainsNull))
       def defaultValueTest(field: Schema.Field, unionTypes: List[Schema], maxNonNullTypes: Int) =
         (unionTypes.length > maxNonNullTypes     && !unionTypes.exists(unionContainsNull) && field.hasDefaultValue) ||
-          (unionTypes.length > maxNonNullTypes + 1 &&  unionTypes.exists(unionContainsNull) && field.hasDefaultValue)
+        (unionTypes.length > maxNonNullTypes + 1 &&  unionTypes.exists(unionContainsNull) && field.hasDefaultValue)
       val unionTypes = unionSchema.getTypes().asScala.toList
       val isShapelessCoproduct: Boolean = shapelessCoproductTest(unionTypes, thresholdNonNullTypes)
       val hasDefaultValue: Boolean = defaultValueTest(field, unionTypes, thresholdNonNullTypes)
@@ -130,10 +128,10 @@ trait StandardImporter extends Importer {
   }
 
   def getImports(
-                  schemaOrProtocol: Either[Schema, Protocol],
-                  currentNamespace: Option[String],
-                  schemaStore: SchemaStore,
-                  typeMatcher: TypeMatcher): List[Import] = {
+    schemaOrProtocol: Either[Schema, Protocol],
+    currentNamespace: Option[String],
+    schemaStore: SchemaStore,
+    typeMatcher: TypeMatcher): List[Import] = {
     val topLevelSchemas = getTopLevelSchemas(schemaOrProtocol, schemaStore, typeMatcher)
     val recordSchemas = getRecordSchemas(topLevelSchemas)
     val fixedSchemas = getFixedSchemas(topLevelSchemas)
@@ -141,11 +139,13 @@ trait StandardImporter extends Importer {
     val userDefinedDeps = getUserDefinedImports(recordSchemas ++ fixedSchemas ++ enumSchemas, currentNamespace, typeMatcher)
     val shapelessDeps = getShapelessImports(recordSchemas, typeMatcher)
     val libraryDeps = shapelessDeps
-    val extraLibraryDeps = Overrides.instance.getExtraImports(topLevelSchemas)
-    libraryDeps ++ userDefinedDeps ++ extraLibraryDeps
+    val extraDeps = extraImports(topLevelSchemas)
+    libraryDeps ++ userDefinedDeps ++ extraDeps
   }
 
+  def extraImports(topLevelSchemas: List[Schema]): List[Import]
 }
 
-
-object StandardImporter extends StandardImporter
+object StandardImporter extends StandardImporter {
+  override def extraImports(topLevelSchemas: List[Schema]): List[Import] = Nil
+}

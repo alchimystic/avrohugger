@@ -8,14 +8,15 @@ import matchers.DefaultValueMatcher
 import matchers.TypeMatcher
 import matchers.custom.CustomTypeMatcher
 import stores.ClassStore
+
 import treehugger.forest._
 import definitions._
 import treehuggerDSL._
+
 import org.apache.avro.Schema
 
 import scala.jdk.CollectionConverters._
 import org.apache.avro.LogicalTypes
-import overrides.Overrides
 
 object StandardCaseClassTree {
 
@@ -34,6 +35,7 @@ object StandardCaseClassTree {
     val avroFields = schema.getFields().asScala.toList
 
     val shouldGenerateSimpleClass = restrictedFields && avroFields.size > 22
+
     val params: List[ValDef] = avroFields.map(f => {
       val fieldName = FieldRenamer.rename(f.name)
       val fieldType = typeMatcher.toScalaType(classStore, namespace, f.schema, fieldName == f.schema.getName())
@@ -140,6 +142,7 @@ object StandardCaseClassTree {
 
     treeWithScalaDoc
   }
+
 
   def toFixedClassDef(
     classStore: ClassStore,

@@ -13,14 +13,11 @@ import definitions.RootClass
 import org.apache.avro.{Protocol, Schema}
 import org.apache.avro.Schema.Type.{ENUM, FIXED, RECORD}
 
-object Standard extends SourceFormat {
+trait Standard extends SourceFormat {
 
   val toolName = "generate"
 
-  val toolShortDescription = "Generates Scala code for the given schema."
-
-  val javaTreehugger = StandardJavaTreehugger
-  val scalaTreehugger = StandardScalaTreehugger
+  val defaultTypes: AvroScalaTypes = AvroScalaTypes.defaults
 
   def asCompilationUnits(
     classStore: ClassStore,
@@ -133,8 +130,6 @@ object Standard extends SourceFormat {
     compilationUnits.foreach(writeToFile)
   }
 
-  val defaultTypes: AvroScalaTypes = AvroScalaTypes.defaults
-
   def getName(
     schemaOrProtocol: Either[Schema, Protocol],
     typeMatcher: TypeMatcher): String = {
@@ -156,5 +151,11 @@ object Standard extends SourceFormat {
       }
     }
   }
+}
+object Standard extends Standard {
+
+  val toolShortDescription = "Generates Scala code for the given schema."
+  val javaTreehugger = StandardJavaTreehugger
+  val scalaTreehugger = StandardScalaTreehugger
 
 }

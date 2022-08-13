@@ -3,15 +3,18 @@ package format
 package standard
 package avrohuggers
 
+import avrohugger.format.configurable.ExtraTraitTree
 import format.abstractions.avrohuggers.Schemahugger
-import trees.{StandardCaseClassTree, StandardObjectTree, StandardTraitTree}
+import trees.{ StandardCaseClassTree, StandardObjectTree, StandardTraitTree }
 import matchers.TypeMatcher
 import stores.{ClassStore, SchemaStore}
 import types._
-import org.apache.avro.{Protocol, Schema}
-import org.apache.avro.Schema.Type.{ENUM, FIXED, RECORD}
+
+import org.apache.avro.{ Protocol, Schema }
+import org.apache.avro.Schema.Type.{ ENUM, FIXED, RECORD }
+
 import treehugger.forest._
-import overrides.Overrides
+import definitions._
 import treehuggerDSL._
 
 object StandardSchemahugger extends Schemahugger {
@@ -57,7 +60,7 @@ object StandardSchemahugger extends Schemahugger {
             maybeFlags)
           List(objectDef)
         case ScalaEnumeratum =>
-          StandardTraitTree.toScalaEnumeratumDef(classStore, schema, maybeBaseTrait, maybeFlags)
+          ExtraTraitTree.toScalaEnumeratumDef(classStore, schema, maybeBaseTrait, maybeFlags)
         case EnumAsScalaString => List.empty
       }
       case FIXED =>
