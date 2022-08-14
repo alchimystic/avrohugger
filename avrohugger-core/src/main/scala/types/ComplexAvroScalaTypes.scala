@@ -12,6 +12,7 @@ case object ScalaCaseClassWithSchema extends AvroScalaRecordType
 // enum
 sealed trait AvroScalaEnumType extends Product with Serializable
 case object ScalaEnumeration extends AvroScalaEnumType
+case object ScalaEnumeratum extends AvroScalaEnumType
 case object JavaEnum extends AvroScalaEnumType
 case object ScalaCaseObjectEnum extends AvroScalaEnumType
 case object EnumAsScalaString extends AvroScalaEnumType

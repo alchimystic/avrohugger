@@ -146,6 +146,7 @@ object SpecificRecord extends SourceFormat{
             case JavaEnum => getLocalSubtypes(protocol).filterNot(isEnum)
             case ScalaCaseObjectEnum => List.empty
             case ScalaEnumeration => List.empty
+            case ScalaEnumeratum => List.empty
             case EnumAsScalaString => getLocalSubtypes(protocol).filterNot(isEnum)
           }
           val localRecords = localSubtypes.filterNot(isEnum)
@@ -153,6 +154,7 @@ object SpecificRecord extends SourceFormat{
             case JavaEnum => getLocalSubtypes(protocol).filter(isEnum)
             case ScalaCaseObjectEnum => List.empty
             case ScalaEnumeration => List.empty
+            case ScalaEnumeratum => List.empty
             case EnumAsScalaString => List.empty
           }
           val javaCompilationUnits = localEnums.map(schema => {

@@ -26,7 +26,7 @@ object CustomTypeMatcher {
     useFullName: Boolean = false
   ) = enumType match {
       case JavaEnum => classStore.generatedClasses(schema)
-      case ScalaEnumeration => if (useFullName) RootClass.newClass(s"${schema.getNamespace()}.${classStore.generatedClasses(schema)}") else classStore.generatedClasses(schema)
+      case ScalaEnumeration | ScalaEnumeratum => if (useFullName) RootClass.newClass(s"${schema.getNamespace()}.${classStore.generatedClasses(schema)}") else classStore.generatedClasses(schema)
       case ScalaCaseObjectEnum => classStore.generatedClasses(schema)
       case EnumAsScalaString => StringClass
     }

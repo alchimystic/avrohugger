@@ -38,6 +38,7 @@ object StandardProtocolhugger extends Protocolhugger {
       case JavaEnum => localSubTypes.filterNot(isEnum)
       case ScalaCaseObjectEnum => localSubTypes
       case ScalaEnumeration => localSubTypes
+      case ScalaEnumeratum => localSubTypes
       case EnumAsScalaString => localSubTypes.filterNot(isEnum)
     }
 
