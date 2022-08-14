@@ -15,7 +15,7 @@ import treehuggerDSL._
 
 import scala.jdk.CollectionConverters._
 
-object StandardImporter extends Importer {
+trait StandardImporter extends Importer {
 
   /**
     * Shapeless representations of Coproduct are by default only active when `union`
@@ -122,7 +122,7 @@ object StandardImporter extends Importer {
         field <- topLevelRecordSchema.getFields().asScala
         symbol <- determineShapelessTagImport(field.schema(), typeMatcher, List.empty[Schema])
       } yield symbol
-      
+
     shapelessImport(shapelessCopSymbols.distinct) ++
       shapelessImport(shapelessTag.distinct)
   }
@@ -139,7 +139,13 @@ object StandardImporter extends Importer {
     val userDefinedDeps = getUserDefinedImports(recordSchemas ++ fixedSchemas ++ enumSchemas, currentNamespace, typeMatcher)
     val shapelessDeps = getShapelessImports(recordSchemas, typeMatcher)
     val libraryDeps = shapelessDeps
-    libraryDeps ++ userDefinedDeps
+    val extraDeps = extraImports(topLevelSchemas)
+    libraryDeps ++ userDefinedDeps ++ extraDeps
   }
 
+  def extraImports(topLevelSchemas: List[Schema]): List[Import]
+}
+
+object StandardImporter extends StandardImporter {
+  override def extraImports(topLevelSchemas: List[Schema]): List[Import] = Nil
 }

@@ -13,14 +13,11 @@ import definitions.RootClass
 import org.apache.avro.{Protocol, Schema}
 import org.apache.avro.Schema.Type.{ENUM, FIXED, RECORD}
 
-object Standard extends SourceFormat {
+trait Standard extends SourceFormat {
 
   val toolName = "generate"
 
-  val toolShortDescription = "Generates Scala code for the given schema."
-
-  val javaTreehugger = StandardJavaTreehugger
-  val scalaTreehugger = StandardScalaTreehugger
+  val defaultTypes: AvroScalaTypes = AvroScalaTypes.defaults
 
   def asCompilationUnits(
     classStore: ClassStore,
@@ -40,21 +37,23 @@ object Standard extends SourceFormat {
 
     val enumType = typeMatcher.avroScalaTypes.enum
 
+    def defaultScalaCompUnit(schOrProd: Either[Schema, Protocol] = schemaOrProtocol): List[CompilationUnit] = {
+      val scalaCompilationUnit = getScalaCompilationUnit(
+        classStore,
+        namespace,
+        schOrProd,
+        typeMatcher,
+        schemaStore,
+        maybeOutDir,
+        restrictedFields,
+        targetScalaPartialVersion)
+      List(scalaCompilationUnit)
+    }
+
     schemaOrProtocol match {
       case Left(schema) => {
         schema.getType match {
-          case RECORD => {
-            val scalaCompilationUnit = getScalaCompilationUnit(
-              classStore,
-              namespace,
-              schemaOrProtocol,
-              typeMatcher,
-              schemaStore,
-              maybeOutDir,
-              restrictedFields,
-              targetScalaPartialVersion)
-            List(scalaCompilationUnit)
-          }
+          case RECORD => defaultScalaCompUnit()
           case ENUM => {
             enumType match {
               // java enums can't be represented as trees so they can't be
@@ -70,59 +69,18 @@ object Standard extends SourceFormat {
                   typeMatcher)
                 List(javaCompilationUnit)
               }
-              case ScalaCaseObjectEnum => {
-                val scalaCompilationUnit = getScalaCompilationUnit(
-                  classStore,
-                  namespace,
-                  schemaOrProtocol,
-                  typeMatcher,
-                  schemaStore,
-                  maybeOutDir,
-                  restrictedFields,
-                  targetScalaPartialVersion)
-                List(scalaCompilationUnit)
-              }
-              case ScalaEnumeration => {
-                val scalaCompilationUnit = getScalaCompilationUnit(
-                  classStore,
-                  namespace,
-                  schemaOrProtocol,
-                  typeMatcher,
-                  schemaStore,
-                  maybeOutDir,
-                  restrictedFields,
-                  targetScalaPartialVersion)
-                List(scalaCompilationUnit)
-              }
-              case EnumAsScalaString => {
-                List.empty
-              }
+              case ScalaCaseObjectEnum => defaultScalaCompUnit()
+              case ScalaEnumeration => defaultScalaCompUnit()
+              case ScalaEnumeratum => defaultScalaCompUnit()
+              case EnumAsScalaString => List.empty
             }
           }
-          case FIXED =>
-            val scalaCompilationUnit = getScalaCompilationUnit(
-              classStore,
-              namespace,
-              schemaOrProtocol,
-              typeMatcher,
-              schemaStore,
-              maybeOutDir,
-              restrictedFields,
-              targetScalaPartialVersion)
-            List(scalaCompilationUnit)
+          case FIXED => defaultScalaCompUnit()
           case _ => sys.error("Only FIXED, RECORD, or ENUM can be toplevel definitions")
         }
       }
       case Right(protocol) => {
-        val scalaCompilationUnit = getScalaCompilationUnit(
-          classStore,
-          namespace,
-          Right(protocol),
-          typeMatcher,
-          schemaStore,
-          maybeOutDir,
-          restrictedFields,
-          targetScalaPartialVersion)
+        val scalaCompilationUnit = defaultScalaCompUnit(Right(protocol))(0)
         enumType match {
           // java enums can't be represented as trees so they can't be handled
           // by treehugger. Their compilation unit must de generated
@@ -144,6 +102,7 @@ object Standard extends SourceFormat {
           }
           case ScalaCaseObjectEnum => List(scalaCompilationUnit)
           case ScalaEnumeration => List(scalaCompilationUnit)
+          case ScalaEnumeratum => List(scalaCompilationUnit)
           case EnumAsScalaString => List(scalaCompilationUnit)
         }
       }
@@ -171,8 +130,6 @@ object Standard extends SourceFormat {
     compilationUnits.foreach(writeToFile)
   }
 
-  val defaultTypes: AvroScalaTypes = AvroScalaTypes.defaults
-
   def getName(
     schemaOrProtocol: Either[Schema, Protocol],
     typeMatcher: TypeMatcher): String = {
@@ -183,6 +140,7 @@ object Standard extends SourceFormat {
           case JavaEnum => getLocalSubtypes(protocol).filterNot(isEnum)
           case ScalaCaseObjectEnum => getLocalSubtypes(protocol)
           case ScalaEnumeration => getLocalSubtypes(protocol)
+          case ScalaEnumeratum => getLocalSubtypes(protocol)
           case EnumAsScalaString => getLocalSubtypes(protocol).filterNot(isEnum)
         }
         if (localSubTypes.length > 1) protocol.getName // for ADT
@@ -193,5 +151,11 @@ object Standard extends SourceFormat {
       }
     }
   }
+}
+object Standard extends Standard {
+
+  val toolShortDescription = "Generates Scala code for the given schema."
+  val javaTreehugger = StandardJavaTreehugger
+  val scalaTreehugger = StandardScalaTreehugger
 
 }

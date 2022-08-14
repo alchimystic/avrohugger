@@ -25,7 +25,7 @@ class ScalaConverter(typeMatcher: TypeMatcher) {
     schema.getType match {
       case Schema.Type.ENUM  => typeMatcher.avroScalaTypes.enum match {
         case EnumAsScalaString => tree TOSTRING
-        case JavaEnum | ScalaEnumeration | ScalaCaseObjectEnum => {
+        case JavaEnum | ScalaEnumeration | ScalaCaseObjectEnum | ScalaEnumeratum => {
           val conversionCases = schema.getEnumSymbols.asScala.map(enumSymbol => {
             CASE(REF("J" + schema.getName) DOT(enumSymbol)) ==> (REF(schema.getName) DOT(enumSymbol))
           })

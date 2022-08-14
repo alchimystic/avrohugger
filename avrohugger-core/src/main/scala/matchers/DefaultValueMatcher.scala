@@ -81,6 +81,7 @@ object DefaultValueMatcher {
           typeMatcher.avroScalaTypes.enum match {
             case JavaEnum => (REF(refName) DOT node.textValue())
             case ScalaEnumeration => (REF(refName) DOT node.textValue())
+            case ScalaEnumeratum => (REF(refName) DOT node.textValue())
             case ScalaCaseObjectEnum => (REF(refName) DOT node.textValue())
             case EnumAsScalaString => LIT(node.textValue())
           }

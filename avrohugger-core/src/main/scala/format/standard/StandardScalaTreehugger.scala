@@ -3,7 +3,7 @@ package format
 package standard
 
 import format.abstractions.ScalaTreehugger
-import avrohuggers.{ StandardProtocolhugger, StandardSchemahugger }
+import avrohuggers.{StandardProtocolhugger, StandardSchemahugger}
 import matchers.TypeMatcher
 import stores.{ ClassStore, SchemaStore }
 
@@ -15,12 +15,7 @@ import treehugger.forest._
 import definitions._
 import treehuggerDSL._
 
-
-object StandardScalaTreehugger extends ScalaTreehugger {
-
-  val schemahugger = StandardSchemahugger
-  val protocolhugger = StandardProtocolhugger
-  val importer = StandardImporter
+trait StandardScalaTreehugger extends ScalaTreehugger {
 
   def asScalaCodeString(
 		classStore: ClassStore,
@@ -69,5 +64,13 @@ object StandardScalaTreehugger extends ScalaTreehugger {
     // a string here for a consistent api vis a vis *ToFile and *ToStrings
     treeToString(tree)
   }
+
+}
+
+object StandardScalaTreehugger extends StandardScalaTreehugger {
+
+  val schemahugger = StandardSchemahugger
+  val protocolhugger = StandardProtocolhugger
+  val importer = StandardImporter
 
 }

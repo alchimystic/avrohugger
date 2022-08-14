@@ -55,7 +55,7 @@ object ScavroSchemahugger extends Schemahugger{
           List.empty
         case ScalaCaseObjectEnum =>
           ScavroTraitTree.toCaseObjectEnumDef(schema, maybeBaseTrait)
-        case ScalaEnumeration =>
+        case ScalaEnumeration | ScalaEnumeratum =>
           val objectDef = ScavroObjectTree.toScalaEnumDef(
             classStore,
             schema,
